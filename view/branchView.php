@@ -23,27 +23,10 @@ foreach($pagedata['coworkers'] as $coworker){
 <hr>
 <?php
 foreach($pagedata['coaches'] as $coaches){
-    echo $coaches->mail;
-    if($branch->is_connected($branchinfo->id,$coaches->id)){
-        ?>
-        <form action="branches.php?type=Connection" method="post">
-        <input type="hidden" name="userID" value="<?php echo $coaches->id; ?>">
-        <input type="hidden" name="branchID" value="<?php echo $branchinfo->id; ?>">
-        <input type="hidden" name="token" value="<?php echo Token::generate(); ?>">
-        <input type="submit" name="removeConnection"value="Remove">
-        </form>
-        <?php
-    }else{
-        ?>
-        <form action="branches.php?type=Connection" method="post">
-        <input type="hidden" name="userID" value="<?php echo $coaches->id; ?>">
-        <input type="hidden" name="branchID" value="<?php echo $branchinfo->id; ?>">
-        <input type="hidden" name="connectiontype" value="1">
-        <input type="hidden" name="token" value="<?php echo Token::generate(); ?>">
-        <input type="submit" name="createConnection" value="Create">
-        </form>
-        <?php
-    }
+    echo "<pre>",print_r($coaches),"</pre>";
+    echo $coaches->userID;
+    //if($branch->is_connected($branchinfo->id,$coaches->id)){echo " <b>Connected</b>";}
+    echo "<br>";
 }
 ?>
 </div>

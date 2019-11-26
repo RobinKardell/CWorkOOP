@@ -8,7 +8,13 @@ class Branches {
 
     public function create($fields = array()) {
         if(!$this->_db->insert('branches', $fields)) {
-            throw new Exception('Sorry, there was a problem creating your account;');
+            throw new Exception('Sorry, there was a problem creating a branch');
+        }
+    }
+
+    public function createCoachConnection($fields = array()) {
+        if(!$this->_db->insert('branch_connections', $fields)) {
+            throw new Exception('Sorry, there was a problem creating the connection');
         }
     }
 
@@ -22,10 +28,21 @@ class Branches {
         }
     }
     
-    public function list(){
-        $branches = $this->_db->get('branches', array(
-                                                array('orgID', '=', '0')
-                                            ));
+    public function list($userID = null){
+        if(is_null($userID)){
+            $branches = $this->_db->get('branches', array(
+                array('orgID', '=', '0')
+            ));
+        }else{
+            $branches = $this->_db->query("
+            SELECT branches.* 
+            FROM branches 
+            INNER JOIN branch_connections 
+            ON branches.id = branch_connections.branchID 
+            WHERE branch_connections.userID = {$userID}
+            ");
+        }
+        
         if($branches->count()) {
             return $branches->results();
         }
@@ -49,7 +66,7 @@ class Branches {
     
     public function get_coaches(){
         $coworkers = $this->_db->query("
-        SELECT members.*, permissions.*
+        SELECT members.*
         FROM members
         INNER JOIN permissions
         ON members.role = permissions.id
@@ -62,14 +79,26 @@ class Branches {
         }
         return false;
     }
-
-    public function is_connected($branchid,$userid){
-        $connected = $this->_db->get('branchconnections', array(
-            array('branchID','=',$branchid),
-            array('userID','=',$userid)
+    public function connected_Coaches($branchid){
+        $connected = $this->_db->get('branch_connections', array(
+            array('branchID','=',$branchid)
         ));
+        if($connected->count()){
+            return $connected->results();
+        }
+        return false;
+    }
+    public function is_connected($branchid = null, $userid = null){
+        $where = array();
+        if(!is_null($branchid)){
+            $where[] = array('branchID','=',$branchid);
+        }
+        if(!is_null($userid)){
+            $where[] = array('userID','=',$userid);
+        }
+        $connected = $this->_db->get('branch_connections',$where);
         if($connected){
-            return true;
+            return $connected->results();
         }
         return false;
     }
