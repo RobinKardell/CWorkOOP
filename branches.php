@@ -7,8 +7,8 @@ if(Input::exists('get')){
     if(Input::get('type')){
         if(Input::get('type') == 'view'){
             $page = 'branchView';
-            $datatopage['coworkers'] = $branch->get_coworkers();
-            $datatopage['coaches'] = $branch->connected_Coaches(Input::get('viewID'));
+            $datatopage['coworkers'] = $branch->get_coworkers(Input::get('viewID'));
+            $datatopage['coaches'] = $branch->get_coaches(Input::get('viewID'));
             $datatopage['branchinfo'] = $branch->getData(Input::get('viewID'));
         }elseif(Input::get('type') == 'addCoach'){
             $page = 'addCoachToBranch';
@@ -78,7 +78,8 @@ if(Input::exists('get')){
     }else{
         $datatopage['branches'] = $branch->list();
     }
-
+   
 }
+$datatopage['userPermissions'] = $user->getPermissions();
 $view->make($page,$datatopage);
 ?>

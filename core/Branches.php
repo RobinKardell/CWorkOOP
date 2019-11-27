@@ -48,15 +48,14 @@ class Branches {
         }
         return false;
     }
-    public function get_coworkers(){
+    public function get_coworkers($branchid){
         $coworkers = $this->_db->query("
-        SELECT members.*, permissions.*
-        FROM members
-        INNER JOIN permissions
-        ON members.role = permissions.id
-        WHERE permissions.canDo LIKE '%can_be_coached%'
-        AND members.orgID = '0'
-        AND members.active = '1'
+        SELECT members.* 
+        FROM members 
+        INNER JOIN branch_connections 
+        ON members.id = branch_connections.userID
+        WHERE branch_connections.branchID = {$branchid} 
+        AND branch_connections.type = 'coworker' 
         ");
         if($coworkers->count()){
             return $coworkers->results();
@@ -64,30 +63,30 @@ class Branches {
         return false;
     }
     
-    public function get_coaches(){
-        $coworkers = $this->_db->query("
-        SELECT members.*
-        FROM members
-        INNER JOIN permissions
-        ON members.role = permissions.id
-        WHERE permissions.canDo LIKE '%can_coach%'
-        AND members.orgID = '0'
-        AND members.active = '1'
-        ");
-        if($coworkers->count()){
-            return $coworkers->results();
+    public function get_coaches($branchid = null){
+        if(is_null($branchid)){
+           $sql = "SELECT members.* 
+           FROM members 
+           INNER JOIN permissions 
+           ON members.role = permissions.id
+           WHERE permissions.canDo LIKE '%can_coach%'";
+        }else{
+        $sql ="
+        SELECT members.* 
+        FROM members 
+        INNER JOIN branch_connections 
+        ON members.id = branch_connections.userID
+        WHERE branch_connections.branchID = {$branchid} 
+        AND branch_connections.type = 'coach' 
+        ";}
+        $coaches = $this->_db->query($sql);
+        if($coaches->count()){
+            return $coaches->results();
         }
         return false;
     }
-    public function connected_Coaches($branchid){
-        $connected = $this->_db->get('branch_connections', array(
-            array('branchID','=',$branchid)
-        ));
-        if($connected->count()){
-            return $connected->results();
-        }
-        return false;
-    }
+
+
     public function is_connected($branchid = null, $userid = null){
         $where = array();
         if(!is_null($branchid)){

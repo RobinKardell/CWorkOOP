@@ -1,32 +1,41 @@
 <?php $branchinfo = $pagedata['branchinfo']; ?>
 <div class="container">
-<h1>Branch view</h1>
+<h1>Branch view of <?php echo $branchinfo->name; ?></h1>
 <hr>
-<?php echo "<pre>",print_r($branchinfo),"</pre>"; ?>
 <div class="row">
 <div class="col-md-6">
 <h2>CoWorkers</h2>
 <hr>
 <?php
-//print_r($pagedata['coworkers']);
-$branch = new Branches();
-foreach($pagedata['coworkers'] as $coworker){
+if($pagedata['coworkers']){
+    foreach($pagedata['coworkers'] as $coworker){
     echo $coworker->mail;
     echo "<br>";
+    }
+}else{
+   echo  "There is no coWorkers listed here";
 }
 ?>
 </div>
 <div class="col-md-6">
 <h2>Connected coaches</h2>
-<hr>
+
+<?php
+if(in_array('connect_coach_to_branch',$pagedata['userPermissions'])){
+?>
 <a href="branches.php?type=addCoach&branchID=<?php echo $branchinfo->id; ?>" class="btn btn-primary">Add Coach to this branch</a>
+<?php
+}
+?>
 <hr>
 <?php
-foreach($pagedata['coaches'] as $coaches){
-    echo "<pre>",print_r($coaches),"</pre>";
-    echo $coaches->userID;
-    //if($branch->is_connected($branchinfo->id,$coaches->id)){echo " <b>Connected</b>";}
-    echo "<br>";
+if($pagedata['coaches']){
+    foreach($pagedata['coaches'] as $coaches){
+        echo "{$coaches->fname} {$coaches->lname}[{$coaches->mail}]";
+        echo "<br>";
+    }
+}else{
+   echo  "There is no coaches listed here";
 }
 ?>
 </div>

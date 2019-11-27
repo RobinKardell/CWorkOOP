@@ -23,6 +23,7 @@ $GLOBALS['config'] = array(
     'role_permissions' => array(
         'accounthandle' => array(
             'view_all',
+            'set_to_work'
         ),
         'permissions' => array(
             'view_permissions',
@@ -30,15 +31,23 @@ $GLOBALS['config'] = array(
             'edit_permissions',
             'delete_permissions',
         ),
-        'activity' => array(),
         'branches' => array(
+            'create_branches',
+            'connect_coach_to_branch',
             'view_all_branches',
             'view_only_connected_branch'
         ),
         'program' => array(
             'create_program',
             'edit_program',
-            'delete_program'
+            'delete_program',
+            'mark_program_done',
+            'create_activity',
+            'edit_activity',
+            'set_activity,',
+            'reset_activiy',
+            'mark_activity_done',
+            'delete_activity'
         ),
         'coach' => array(
             'can_coach',

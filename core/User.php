@@ -86,7 +86,7 @@ class User {
         }
         return false;
     }
-    public function getPermissions($id){
+    public function getPermissions($id=null){
         $group = $this->_db->get('permissions', array(array('id', '=', $this->data()->role)));
         if($group->count()) {
             $permissions = explode(',',$group->first()->canDo);
@@ -128,5 +128,12 @@ class User {
             }
         }
         return false;
+    }
+
+
+    public function set_branch_history($fields = array()){
+        if(!$this->_db->insert('member_branch_history', $fields)) {
+            throw new Exception('There was a problem updating');
+        }
     }
 }

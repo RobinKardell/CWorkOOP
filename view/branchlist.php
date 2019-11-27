@@ -1,8 +1,15 @@
 <div class="container">
     <h1>Branches</h1>
-    <p>
+    <?php
+    if(in_array('create_branches',$pagedata['userPermissions'])){
+   ?>
+   <p>
     <a href="branches.php?type=create" class="btn">Create Branch</a>
     </p>
+   <?php
+    }
+?>
+    
     <p>
     <?php
     foreach($pagedata['branches'] as $branch){

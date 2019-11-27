@@ -19,12 +19,11 @@ if(Input::exists('get')){
                         'password' => array('required' => true)
                     ));
                     if($validate->passed()) {
-                        $user = new User();
-                        $date = date('Y-m-d H:i:s');
-                        $password = password_hash(Input::get('password'), PASSWORD_DEFAULT);
+                        $Newuser = new User();
                         try {
                             $date = date('Y-m-d H:i:s');
-                            $user->create(array(
+                            $password = password_hash(Input::get('password'), PASSWORD_DEFAULT);
+                            $Newuser->create(array(
                                 'fname' => Input::get('fname'),
                                 'lname' => Input::get('lname'),
                                 'phone' => Input::get('phone'),
@@ -50,8 +49,114 @@ if(Input::exists('get')){
             if(!Input::get('viewID')){
                 Redirect::to('accounthandle.php');
             }
+            if(Input::get('update')){
+                if(Token::check(Input::get('token'))) {
+                    $viewUser = new User();
+                    try {
+                        $viewUser->update(array(
+                            'workat' => Input::get('branch')
+                        ),Input::get('viewID'));
+                        //Session::flash('home', 'Welcome ' . Input::get('username') . '! Your account has been registered. You may now log in.');
+                        //Redirect::to('accounthandle.php?type=viewUser&viewID='.Input::get('viewID'));
+                    } catch(Exception $e) {
+                        echo $e->getTraceAsString(), '<br>';
+                    }
+                    
+                    if(Input::get('historyType') == 'startwork' ){
+                        try {
+                            $viewUser->update(
+                                array(
+                                    'workat' => Input::get('branch')
+                                ),
+                                Input::get('viewID')
+                            );
+                            $viewUser->set_branch_history(array(
+                                'userID' => Input::get('viewID'),
+                                'branchID' => Input::get('branch'),
+                                'date' => time(),
+                                'type' => 'start'
+                            ));
+                            //Session::flash('home', 'Welcome ' . Input::get('username') . '! Your account has been registered. You may now log in.');
+                        } catch(Exception $e) {
+                            echo $e->getTraceAsString(), '<br>';
+                        }
+                    }else{
+                        try {
+                            $viewUser->update(
+                                array(
+                                    'workat' => Input::get('branch')
+                                ),
+                                Input::get('viewID')
+                            );
+                            if(Input::get('branch') == '0'){
+                                $viewUser->set_branch_history(array(
+                                    'userID' => Input::get('viewID'),
+                                    'branchID' => Input::get('branch'),
+                                    'date' => time(),
+                                    'type' => 'end'
+                                ));
+                            }else{
+                                $viewUser->set_branch_history(array(
+                                    'userID' => Input::get('viewID'),
+                                    'branchID' => Input::get('branch'),
+                                    'date' => time(),
+                                    'type' => 'end'
+                                ));
+                                $viewUser->set_branch_history(array(
+                                    'userID' => Input::get('viewID'),
+                                    'branchID' => Input::get('branch'),
+                                    'date' => time(),
+                                    'type' => 'start'
+                                ));
+                            }
+                            //Session::flash('home', 'Welcome ' . Input::get('username') . '! Your account has been registered. You may now log in.');
+                        } catch(Exception $e) {
+                            echo $e->getTraceAsString(), '<br>';
+                        }
+                    }    
+                    Redirect::to('accounthandle.php?type=viewUser&viewID='.Input::get('viewID'));
+                }
+            }
+            $branch = new Branches();
             $viewUser = new User(Input::get('viewID'));
-            $datatopage['viewuserdata'] = $viewUser->data();
+
+            $viewUserData =  $viewUser->data();
+            if(!$viewUser->hasPermission('can_coach')){
+                if($viewUserData->workat != "0" and !is_null($viewUserData->workat)){
+                    $branch = new Branches();
+                    $coaches = $branch->get_coaches($viewUserData->workat);
+                    //lägg till en kontroll om coworken, har en coach eller inte 
+                    $datatopage['coaches'] = $coaches;
+                    if($viewUserData->connectedCoach == '0' or is_null($viewUserData->connectedCoach)){
+                        if(count($coaches)>1){
+                            die('more then 1 coach to this workplace');
+                        }else{
+                            if(count($coaches)==0){
+                                die('sorry you need to set a coach to this workplace');
+                            }elseif(count($coaches)==1){
+                                try {
+                                    $viewUser->update(array(
+                                        'connectedCoach' => $coaches[0]->id
+                                    ),Input::get('viewID'));
+                                    Redirect::to('accounthandle.php?type=viewUser&viewID='.Input::get('viewID'));
+                                } 
+                                catch(Exception $e) {
+                                    echo $e->getTraceAsString(), '<br>';
+                                }
+                                
+                            }
+                        }
+                    }else{
+                        die('you have a coach');
+                    }
+                }else{
+                    die('have no work');
+                }
+            }
+            $datatopage['branches'] = $branch->list(); 
+           
+            $datatopage['viewuserdata'] = $viewUserData;
+            //$datatopage['branch_history'] = $viewUser->get_branch_history(Input::get('viewID'));
             $page = 'view_user';
         }elseif(Input::get('type') == 'editUser'){
             if(!Input::get('userID')){
@@ -66,9 +171,9 @@ if(Input::exists('get')){
                         'phone' => array('required' => true),
                     ));
                     if($validate->passed()) {
-                        $user = new User();
+                        $viewUser = new User();
                         try {
-                            $user->update(array(
+                            $viewUser->update(array(
                                 'phone' => Input::get('phone')
                             ),Input::get('userID'));
                             //Session::flash('home', 'Welcome ' . Input::get('username') . '! Your account has been registered. You may now log in.');
@@ -113,5 +218,6 @@ if(Input::exists('get')){
 }
 
 $view = new View();
+$datatopage['userPermissions'] = $user->getPermissions();
 $view->make($page,$datatopage);
 ?>
